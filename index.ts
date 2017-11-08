@@ -9,26 +9,37 @@ const client = new Twitter({
     consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
 });
 
-function getFollowers(result: string[], cursor: number, callback: () => void) {
-    client.get("followers/list", { skip_status: true, count: 200, cursor }, (error, response) => {
-        if (error) {
-            console.log(error);
-            return;
+function getFollowers() {
+    return new Promise<string[]>((resolve, reject) => {
+        const followers: string[] = [];
+
+        function getFollowersInternal(cursor: number) {
+            client.get("followers/list", { skip_status: true, count: 200, cursor }, (error, response) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+
+                for (const user of response.users) {
+                    followers.push(user.screen_name);
+                }
+
+                console.log(response.next_cursor);
+                if (response.next_cursor === 0) {
+                    resolve(followers);
+                }
+                else {
+                    getFollowersInternal(response.next_cursor);
+                }
+            });
         }
 
-        for (const user of response.users) {
-            result.push(user.screen_name);
-        }
-
-        console.log(response.next_cursor);
-        if (response.next_cursor === 0) {
-            callback();
-        }
-        else {
-            getFollowers(result, response.next_cursor, callback);
-        }
+        getFollowersInternal(-1);
     });
 }
 
-const followers: string[] = [];
-getFollowers(followers, -1, () => { console.log(`followers count ${followers.length}`); });
+getFollowers().then(
+    (followers: string[]) => { console.log(`followers count ${followers.length}`); }
+).catch(
+    (error) => { console.log(error); }
+);
