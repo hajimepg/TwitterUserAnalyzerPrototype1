@@ -14,7 +14,14 @@
                 "check-open-brace",
                 "check-whitespace"
             ]
-        }
+        },
+        "trailing-comma": [true,
+            {
+                "multiline": {
+                    "functions": "never"
+                }
+            }
+        ]
     },
     "rulesDirectory": []
 }
