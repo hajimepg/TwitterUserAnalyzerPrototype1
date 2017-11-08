@@ -104,62 +104,41 @@ else {
     });
 }
 
-async function getFollowers() {
+async function getUserList(endpoint: string) {
     return new Promise<string[]>((resolve, reject) => {
-        const followers: string[] = [];
+        const users: string[] = [];
 
-        function getFollowersInternal(cursor: number) {
-            client.get("followers/list", { skip_status: true, count: 200, cursor }, (error, response) => {
+        function getUserListInternal(cursor: number) {
+            client.get(endpoint, { skip_status: true, count: 200, cursor }, (error, response) => {
                 if (error) {
                     reject(error);
                     return;
                 }
 
                 for (const user of response.users) {
-                    followers.push(user.screen_name);
+                    users.push(user.screen_name);
                 }
 
                 console.log(response.next_cursor);
                 if (response.next_cursor === 0) {
-                    resolve(followers);
+                    resolve(users);
                 }
                 else {
-                    getFollowersInternal(response.next_cursor);
+                    getUserListInternal(response.next_cursor);
                 }
             });
         }
 
-        getFollowersInternal(-1);
+        getUserListInternal(-1);
     });
 }
 
+async function getFollowers() {
+    return getUserList("followers/list");
+}
+
 async function getFriends() {
-    return new Promise<string[]>((resolve, reject) => {
-        const friends: string[] = [];
-
-        function getFriendsInternal(cursor: number) {
-            client.get("friends/list", { skip_status: true, count: 200, cursor }, (error, response) => {
-                if (error) {
-                    reject(error);
-                    return;
-                }
-
-                for (const user of response.users) {
-                    friends.push(user.screen_name);
-                }
-
-                console.log(response.next_cursor);
-                if (response.next_cursor === 0) {
-                    resolve(friends);
-                }
-                else {
-                    getFriendsInternal(response.next_cursor);
-                }
-            });
-        }
-
-        getFriendsInternal(-1);
-    });
+    return getUserList("friends/list");
 }
 
 (async () => {
