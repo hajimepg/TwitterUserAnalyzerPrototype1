@@ -61,7 +61,7 @@ else {
     });
 }
 
-function getFollowers() {
+async function getFollowers() {
     return new Promise<string[]>((resolve, reject) => {
         const followers: string[] = [];
 
@@ -90,8 +90,10 @@ function getFollowers() {
     });
 }
 
-getFollowers().then(
-    (followers: string[]) => { console.log(`followers count ${followers.length}`); }
-).catch(
+(async () => {
+    const followers: string[] = await getFollowers();
+    console.log(`followers count ${followers.length}`);
+})()
+.catch(
     (error) => { console.log(error); }
 );
