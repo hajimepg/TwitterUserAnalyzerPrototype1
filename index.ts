@@ -62,9 +62,27 @@ async function getFriends() {
 (async () => {
     const followers: string[] = await getFollowers();
     console.log(`followers count ${followers.length}`);
+    console.log(`followers ${followers}`);
 
     const friends: string[] = await getFriends();
+    console.log("===========================");
     console.log(`friends count ${friends.length}`);
+    console.log(`friends ${friends}`);
+
+    const followEachOther = followers.filter((user) => friends.includes(user));
+    console.log("===========================");
+    console.log(`followEachOther count ${followEachOther.length}`);
+    console.log(`followEachOther ${followEachOther}`);
+
+    const followedOnly = followers.filter((user) => !friends.includes(user));
+    console.log("===========================");
+    console.log(`followedOnly count ${followedOnly.length}`);
+    console.log(`followedOnly ${followedOnly}`);
+
+    const followOnly = friends.filter((user) => !followers.includes(user));
+    console.log("===========================");
+    console.log(`followOnly count ${followOnly.length}`);
+    console.log(`followOnly ${followOnly}`);
 })()
 .catch(
     (error) => { console.log(error); }
