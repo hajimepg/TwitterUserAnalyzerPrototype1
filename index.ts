@@ -12,42 +12,85 @@ let client: { get };
 if (Commander.useStub) {
     client = {
         get: (endpoint: string, parameters: { cursor }, callback: (error, response) => void) => {
-            if (parameters.cursor === -1) {
-                callback(null, {
-                    next_cursor: 1,
-                    users: [
-                        { screen_name: "user1"},
-                        { screen_name: "user2"},
-                        { screen_name: "user3"},
-                        { screen_name: "user4"},
-                        { screen_name: "user5"},
-                    ]
-                });
+            if (endpoint === "followers/list") {
+                if (parameters.cursor === -1) {
+                    callback(null, {
+                        next_cursor: 1,
+                        users: [
+                            { screen_name: "user1"},
+                            { screen_name: "user2"},
+                            { screen_name: "user3"},
+                            { screen_name: "user4"},
+                            { screen_name: "user5"},
+                        ]
+                    });
+                }
+                else if (parameters.cursor === 1) {
+                    callback(null, {
+                        next_cursor: 2,
+                        users: [
+                            { screen_name: "user6"},
+                            { screen_name: "user7"},
+                            { screen_name: "user8"},
+                            { screen_name: "user9"},
+                            { screen_name: "user10"},
+                        ]
+                    });
+                }
+                else if (parameters.cursor === 2) {
+                    callback(null, {
+                        next_cursor: 0,
+                        users: [
+                            { screen_name: "user11"},
+                            { screen_name: "user12"},
+                            { screen_name: "user13"},
+                        ]
+                    });
+                }
+                else {
+                    callback(new Error(`Invalid cursor(${parameters.cursor})`), null);
+                }
             }
-            else if (parameters.cursor === 1) {
-                callback(null, {
-                    next_cursor: 2,
-                    users: [
-                        { screen_name: "user6"},
-                        { screen_name: "user7"},
-                        { screen_name: "user8"},
-                        { screen_name: "user9"},
-                        { screen_name: "user10"},
-                    ]
-                });
-            }
-            else if (parameters.cursor === 2) {
-                callback(null, {
-                    next_cursor: 0,
-                    users: [
-                        { screen_name: "user11"},
-                        { screen_name: "user12"},
-                        { screen_name: "user13"},
-                    ]
-                });
-            }
-            else {
-                callback(new Error(`Invalid cursor(${parameters.cursor})`), null);
+            else if (endpoint === "friends/list") {
+                if (parameters.cursor === -1) {
+                    callback(null, {
+                        next_cursor: 1,
+                        users: [
+                            { screen_name: "user1"},
+                            // { screen_name: "user2"},
+                            { screen_name: "user3"},
+                            // { screen_name: "user4"},
+                            { screen_name: "user5"},
+                        ]
+                    });
+                }
+                else if (parameters.cursor === 1) {
+                    callback(null, {
+                        next_cursor: 2,
+                        users: [
+                            { screen_name: "user6"},
+                            // { screen_name: "user7"},
+                            { screen_name: "user8"},
+                            // { screen_name: "user9"},
+                            { screen_name: "user10"},
+                        ]
+                    });
+                }
+                else if (parameters.cursor === 2) {
+                    callback(null, {
+                        next_cursor: 0,
+                        users: [
+                            { screen_name: "user11"},
+                            { screen_name: "user12"},
+                            // { screen_name: "user13"},
+                            { screen_name: "user14"},
+                            { screen_name: "user15"},
+                        ]
+                    });
+                }
+                else {
+                    callback(new Error(`Invalid cursor(${parameters.cursor})`), null);
+                }
             }
         }
     };
@@ -90,9 +133,41 @@ async function getFollowers() {
     });
 }
 
+async function getFriends() {
+    return new Promise<string[]>((resolve, reject) => {
+        const friends: string[] = [];
+
+        function getFriendsInternal(cursor: number) {
+            client.get("friends/list", { skip_status: true, count: 200, cursor }, (error, response) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+
+                for (const user of response.users) {
+                    friends.push(user.screen_name);
+                }
+
+                console.log(response.next_cursor);
+                if (response.next_cursor === 0) {
+                    resolve(friends);
+                }
+                else {
+                    getFriendsInternal(response.next_cursor);
+                }
+            });
+        }
+
+        getFriendsInternal(-1);
+    });
+}
+
 (async () => {
     const followers: string[] = await getFollowers();
     console.log(`followers count ${followers.length}`);
+
+    const friends: string[] = await getFriends();
+    console.log(`friends count ${friends.length}`);
 })()
 .catch(
     (error) => { console.log(error); }
