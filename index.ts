@@ -80,7 +80,7 @@ async function getFriends() {
     };
     /* tslint:enable:object-literal-sort-keys */
 
-    fs.writeFileSync("./output.json", JSON.stringify(output));
+    fs.writeFileSync("./output.json", JSON.stringify(output, null, 4));
 })()
 .catch(
     (error) => { console.log(error); }
