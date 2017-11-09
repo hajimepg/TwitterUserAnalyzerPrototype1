@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
+import * as fs from "fs";
+
 import * as Commander from "commander";
 import * as Twitter from "twitter";
+
 import Stub from "./stub";
 
 Commander
@@ -61,28 +64,23 @@ async function getFriends() {
 
 (async () => {
     const followers: string[] = await getFollowers();
-    console.log(`followers count ${followers.length}`);
-    console.log(`followers ${followers}`);
-
     const friends: string[] = await getFriends();
-    console.log("===========================");
-    console.log(`friends count ${friends.length}`);
-    console.log(`friends ${friends}`);
 
     const followEachOther = followers.filter((user) => friends.includes(user));
-    console.log("===========================");
-    console.log(`followEachOther count ${followEachOther.length}`);
-    console.log(`followEachOther ${followEachOther}`);
-
     const followedOnly = followers.filter((user) => !friends.includes(user));
-    console.log("===========================");
-    console.log(`followedOnly count ${followedOnly.length}`);
-    console.log(`followedOnly ${followedOnly}`);
-
     const followOnly = friends.filter((user) => !followers.includes(user));
-    console.log("===========================");
-    console.log(`followOnly count ${followOnly.length}`);
-    console.log(`followOnly ${followOnly}`);
+
+    /* tslint:disable:object-literal-sort-keys */
+    const output = {
+        followers,
+        friends,
+        followEachOther,
+        followedOnly,
+        followOnly,
+    };
+    /* tslint:enable:object-literal-sort-keys */
+
+    fs.writeFileSync("./output.json", JSON.stringify(output));
 })()
 .catch(
     (error) => { console.log(error); }
