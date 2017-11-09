@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import * as assert from "assert";
 import * as fs from "fs";
 
 import * as Commander from "commander";
@@ -9,8 +10,15 @@ import * as Twitter from "twitter";
 import Stub from "./stub";
 
 Commander
+    .option("--format <format>")
     .option("--use-stub", "Get data from stub instead Twitter API")
     .parse(process.argv);
+
+const format = Commander.format || "html";
+if (format !== "json" && format !== "html") {
+    console.error(`Invalid format: ${format}`);
+    process.exit(1);
+}
 
 let client: { get };
 
@@ -81,23 +89,31 @@ async function getFriends() {
     };
     /* tslint:enable:object-literal-sort-keys */
 
-    const currentDate: string = DateFns.format(new Date(), "YYYY-MM-DD");
-    let filename: string;
+    if (format === "json") {
+        const currentDate: string = DateFns.format(new Date(), "YYYY-MM-DD");
+        let filename: string;
 
-    for (let i: number = 0; ; i++) {
-        if (i === 0) {
-            filename = `./output-${currentDate}.json`;
-        }
-        else {
-            filename = `./output-${currentDate}_${i}.json`;
+        for (let i: number = 0; ; i++) {
+            if (i === 0) {
+                filename = `./output-${currentDate}.json`;
+            }
+            else {
+                filename = `./output-${currentDate}_${i}.json`;
+            }
+
+            if (fs.existsSync(filename) === false) {
+                break;
+            }
         }
 
-        if (fs.existsSync(filename) === false) {
-            break;
-        }
+        fs.writeFileSync(filename, JSON.stringify(output, null, 4));
     }
-
-    fs.writeFileSync(filename, JSON.stringify(output, null, 4));
+    else if (format === "html") {
+        // TODO: impliment!!
+    }
+    else {
+        assert.fail(`Unsupported output format: "${format}"`);
+    }
 })()
 .catch(
     (error) => { console.log(error); }
