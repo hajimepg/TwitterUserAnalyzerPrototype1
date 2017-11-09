@@ -3,6 +3,7 @@
 import * as fs from "fs";
 
 import * as Commander from "commander";
+import * as DateFns from "date-fns";
 import * as Twitter from "twitter";
 
 import Stub from "./stub";
@@ -80,7 +81,23 @@ async function getFriends() {
     };
     /* tslint:enable:object-literal-sort-keys */
 
-    fs.writeFileSync("./output.json", JSON.stringify(output, null, 4));
+    const currentDate: string = DateFns.format(new Date(), "YYYY-MM-DD");
+    let filename: string;
+
+    for (let i: number = 0; ; i++) {
+        if (i === 0) {
+            filename = `./output-${currentDate}.json`;
+        }
+        else {
+            filename = `./output-${currentDate}_${i}.json`;
+        }
+
+        if (fs.existsSync(filename) === false) {
+            break;
+        }
+    }
+
+    fs.writeFileSync(filename, JSON.stringify(output, null, 4));
 })()
 .catch(
     (error) => { console.log(error); }
