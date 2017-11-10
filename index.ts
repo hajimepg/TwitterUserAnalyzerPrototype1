@@ -5,6 +5,7 @@ import * as fs from "fs";
 
 import * as Commander from "commander";
 import * as DateFns from "date-fns";
+import * as Nunjucks from "nunjucks";
 import * as Twitter from "twitter";
 
 import Stub from "./stub";
@@ -109,7 +110,23 @@ async function getFriends() {
         fs.writeFileSync(filename, JSON.stringify(output, null, 4));
     }
     else if (format === "html") {
-        // TODO: impliment!!
+        const currentDate: string = DateFns.format(new Date(), "YYYY-MM-DD");
+        let filename: string;
+
+        for (let i: number = 0; ; i++) {
+            if (i === 0) {
+                filename = `./output-${currentDate}.html`;
+            }
+            else {
+                filename = `./output-${currentDate}_${i}.html`;
+            }
+
+            if (fs.existsSync(filename) === false) {
+                break;
+            }
+        }
+
+        fs.writeFileSync(filename, Nunjucks.render("output.njk", output));
     }
     else {
         assert.fail(`Unsupported output format: "${format}"`);
