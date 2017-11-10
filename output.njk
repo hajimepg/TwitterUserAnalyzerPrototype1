@@ -7,21 +7,21 @@
         <h3>followEachOther</h3>
         <ul>
             {% for user in followEachOther %}
-                <li>{{ user }}</li>
+                <li>{{ user.screen_name }}</li>
             {% endfor %}
         </ul>
 
         <h3>followedOnly</h3>
         <ul>
             {% for user in followedOnly %}
-                <li>{{ user }}</li>
+                <li>{{ user.screen_name }}</li>
             {% endfor %}
         </ul>
 
         <h3>followOnly</h3>
         <ul>
             {% for user in followOnly %}
-                <li>{{ user }}</li>
+                <li>{{ user.screen_name }}</li>
             {% endfor %}
         </ul>
     </body>

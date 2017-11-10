@@ -35,9 +35,16 @@ else {
     });
 }
 
+class User {
+    /* tslint:disable:variable-name */
+    public screen_name: string;
+    public profile_image_url: string;
+    /* tslint:enable:variable-name */
+}
+
 async function getUserList(endpoint: string) {
-    return new Promise<string[]>((resolve, reject) => {
-        const users: string[] = [];
+    return new Promise<User[]>((resolve, reject) => {
+        const users: User[] = [];
 
         function getUserListInternal(cursor: number) {
             client.get(endpoint, { skip_status: true, count: 200, cursor }, (error, response) => {
@@ -47,7 +54,10 @@ async function getUserList(endpoint: string) {
                 }
 
                 for (const user of response.users) {
-                    users.push(user.screen_name);
+                    users.push({
+                        profile_image_url: user.profile_image_url,
+                        screen_name: user.screen_name,
+                    });
                 }
 
                 console.log(response.next_cursor);
@@ -93,12 +103,18 @@ function createFilename(extension: string): string {
 }
 
 (async () => {
-    const followers: string[] = await getFollowers();
-    const friends: string[] = await getFriends();
+    const followers: User[] = await getFollowers();
+    const friends: User[] = await getFriends();
 
-    const followEachOther = followers.filter((user) => friends.includes(user));
-    const followedOnly = followers.filter((user) => !friends.includes(user));
-    const followOnly = friends.filter((user) => !followers.includes(user));
+    const followEachOther = followers.filter((user1) => {
+        return friends.find((user2) => user1.screen_name === user2.screen_name) !== undefined;
+    });
+    const followedOnly = followers.filter((user1) => {
+        return friends.find((user2) => user1.screen_name === user2.screen_name) === undefined;
+    });
+    const followOnly = friends.filter((user1) => {
+        return followers.find((user2) => user1.screen_name === user2.screen_name) === undefined;
+    });
 
     /* tslint:disable:object-literal-sort-keys */
     const output = {
