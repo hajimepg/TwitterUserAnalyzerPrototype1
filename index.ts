@@ -72,6 +72,26 @@ async function getFriends() {
     return getUserList("friends/list");
 }
 
+function createFilename(extension: string): string {
+    const currentDate: string = DateFns.format(new Date(), "YYYY-MM-DD");
+    let filename: string;
+
+    for (let i: number = 0; ; i++) {
+        if (i === 0) {
+            filename = `./output-${currentDate}.${extension}`;
+        }
+        else {
+            filename = `./output-${currentDate}_${i}.${extension}`;
+        }
+
+        if (fs.existsSync(filename) === false) {
+            break;
+        }
+    }
+
+    return filename;
+}
+
 (async () => {
     const followers: string[] = await getFollowers();
     const friends: string[] = await getFriends();
@@ -91,41 +111,11 @@ async function getFriends() {
     /* tslint:enable:object-literal-sort-keys */
 
     if (format === "json") {
-        const currentDate: string = DateFns.format(new Date(), "YYYY-MM-DD");
-        let filename: string;
-
-        for (let i: number = 0; ; i++) {
-            if (i === 0) {
-                filename = `./output-${currentDate}.json`;
-            }
-            else {
-                filename = `./output-${currentDate}_${i}.json`;
-            }
-
-            if (fs.existsSync(filename) === false) {
-                break;
-            }
-        }
-
+        const filename: string = createFilename(format);
         fs.writeFileSync(filename, JSON.stringify(output, null, 4));
     }
     else if (format === "html") {
-        const currentDate: string = DateFns.format(new Date(), "YYYY-MM-DD");
-        let filename: string;
-
-        for (let i: number = 0; ; i++) {
-            if (i === 0) {
-                filename = `./output-${currentDate}.html`;
-            }
-            else {
-                filename = `./output-${currentDate}_${i}.html`;
-            }
-
-            if (fs.existsSync(filename) === false) {
-                break;
-            }
-        }
-
+        const filename: string = createFilename(format);
         fs.writeFileSync(filename, Nunjucks.render("output.njk", output));
     }
     else {
