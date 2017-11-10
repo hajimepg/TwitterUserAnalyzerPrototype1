@@ -5,6 +5,7 @@ import * as fs from "fs";
 
 import * as Commander from "commander";
 import * as DateFns from "date-fns";
+import * as lodash from "lodash";
 import * as Nunjucks from "nunjucks";
 import * as Twitter from "twitter";
 
@@ -106,15 +107,10 @@ function createFilename(extension: string): string {
     const followers: User[] = await getFollowers();
     const friends: User[] = await getFriends();
 
-    const followEachOther = followers.filter((user1) => {
-        return friends.find((user2) => user1.screen_name === user2.screen_name) !== undefined;
-    });
-    const followedOnly = followers.filter((user1) => {
-        return friends.find((user2) => user1.screen_name === user2.screen_name) === undefined;
-    });
-    const followOnly = friends.filter((user1) => {
-        return followers.find((user2) => user1.screen_name === user2.screen_name) === undefined;
-    });
+    const userComparator = (a, b) => a.screen_name === b.screen_name;
+    const followEachOther = lodash.intersectionWith(followers, friends, userComparator);
+    const followedOnly = lodash.differenceWith(followers, friends, userComparator);
+    const followOnly = lodash.differenceWith(friends, followers, userComparator);
 
     /* tslint:disable:object-literal-sort-keys */
     const output = {
