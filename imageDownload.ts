@@ -3,6 +3,7 @@
 import { Buffer } from "buffer";
 import * as fs from "fs";
 import * as http from "http";
+import * as path from "path";
 import { setImmediate } from "timers";
 import * as url from "url";
 
@@ -27,9 +28,24 @@ function getExtension(contentType: string | string[]): string {
     }
 }
 
+function createImageDir(imageDir: string) {
+    if (fs.existsSync(imageDir)) {
+        if (fs.statSync(imageDir).isDirectory() === false) {
+            throw new Error("directory name already used");
+        }
+        fs.accessSync(imageDir, fs.constants.W_OK);
+    }
+    else {
+        fs.mkdirSync(imageDir);
+    }
+}
+
 try {
     const input = fs.readFileSync(Commander.input, { encoding: "utf8" });
     const data: ExportFormat = JSON.parse(input);
+
+    const imageDir = path.join(process.cwd(), "images");
+    createImageDir(imageDir);
 
     let downloadCount: number = 0;
     const userComparator = (a, b) => a.screen_name === b.screen_name;
@@ -74,7 +90,7 @@ try {
             res.on("end", () => {
                 const filename = `${screenName}.${extension}`;
                 const imageData = Buffer.concat(chunks);
-                fs.writeFileSync(filename, imageData);
+                fs.writeFileSync(path.join(imageDir, filename), imageData);
                 console.log(`${filename} saved.`);
                 setImmediate(download);
             });
