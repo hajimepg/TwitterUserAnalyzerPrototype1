@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
+import { Buffer } from "buffer";
 import * as fs from "fs";
+import * as http from "http";
 
 import * as Commander from "commander";
 
@@ -15,13 +17,24 @@ try {
     const input = fs.readFileSync(Commander.input, { encoding: "utf8" });
     const data: ExportFormat = JSON.parse(input);
 
-    for (const user of data.followers) {
-        console.log(user.profile_image_url);
-    }
+    const url: string = data.followers[0].profile_image_url;
+    console.log(url);
+    http.get(url, (res) => {
+        if (res.statusCode !== 200) {
+            return;
+        }
 
-    for (const user of data.friends) {
-        console.log(user.profile_image_url);
-    }
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk: Buffer) => {
+            console.log("chunk received");
+            chunks.push(chunk);
+        });
+        res.on("end", () => {
+            console.log("all data received");
+            const imageData = Buffer.concat(chunks);
+            fs.writeFileSync("image.jpg", imageData);
+        });
+    });
 }
 catch (e) {
     console.error(e);
