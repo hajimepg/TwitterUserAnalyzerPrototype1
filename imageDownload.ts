@@ -3,6 +3,7 @@
 import { Buffer } from "buffer";
 import * as fs from "fs";
 import * as http from "http";
+import * as url from "url";
 
 import * as Commander from "commander";
 
@@ -17,11 +18,25 @@ try {
     const input = fs.readFileSync(Commander.input, { encoding: "utf8" });
     const data: ExportFormat = JSON.parse(input);
 
-    const url: string = data.followers[0].profile_image_url;
-    console.log(url);
-    http.get(url, (res) => {
+    const imageUrl: string = data.followers[0].profile_image_url;
+    console.log(imageUrl);
+    http.get(imageUrl, (res) => {
         if (res.statusCode !== 200) {
             return;
+        }
+
+        const contentType = res.headers["content-type"];
+        let extension: string;
+        switch (contentType) {
+            case "image/jpeg":
+                extension = "jpg";
+                break;
+            case "image/png":
+                extension = "png";
+                break;
+            default:
+                console.log(`Unsupported content-type: ${contentType}`);
+                return;
         }
 
         const chunks: Buffer[] = [];
@@ -32,7 +47,7 @@ try {
         res.on("end", () => {
             console.log("all data received");
             const imageData = Buffer.concat(chunks);
-            fs.writeFileSync("image.jpg", imageData);
+            fs.writeFileSync(`image.${extension}`, imageData);
         });
     });
 }
