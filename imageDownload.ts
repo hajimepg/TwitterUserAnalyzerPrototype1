@@ -32,8 +32,15 @@ try {
     const data: ExportFormat = JSON.parse(input);
 
     let downloadCount: number = 0;
-    const downloadQueue = lodash.cloneDeep(
-        data.followers.slice(0, 10) // TODO: デバッグが終わったらsliceを外す
+    const userComparator = (a, b) => a.screen_name === b.screen_name;
+    const downloadQueue = lodash.unionWith(
+        lodash.cloneDeep(
+            data.followers.slice(0, 10) // TODO: デバッグが終わったらsliceを外す
+        ),
+        lodash.cloneDeep(
+            data.friends.slice(0, 10) // TODO: デバッグが終わったらsliceを外す
+        ),
+        userComparator
     );
     const download = () => {
         if (downloadQueue.length === 0) {
@@ -43,11 +50,11 @@ try {
         const target = downloadQueue.shift();
         const screenName: string = target.screen_name;
         const imageUrl: string = target.profile_image_url;
-        console.log(imageUrl);
+        console.log(`[${downloadCount}] download ${imageUrl}`);
         http.get(imageUrl, (res) => {
             downloadCount++;
             if (res.statusCode !== 200) {
-                console.log(`download ${imageUrl }${res.statusCode}`);
+                console.log(`download ${imageUrl} failed. statusCode=${res.statusCode}`);
                 setImmediate(download);
                 return;
             }
@@ -62,13 +69,13 @@ try {
 
             const chunks: Buffer[] = [];
             res.on("data", (chunk: Buffer) => {
-                console.log("chunk received");
                 chunks.push(chunk);
             });
             res.on("end", () => {
-                console.log("all data received");
+                const filename = `${screenName}.${extension}`;
                 const imageData = Buffer.concat(chunks);
-                fs.writeFileSync(`${screenName}.${extension}`, imageData);
+                fs.writeFileSync(filename, imageData);
+                console.log(`${filename} saved.`);
                 setImmediate(download);
             });
         });
