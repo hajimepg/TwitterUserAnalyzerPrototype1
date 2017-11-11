@@ -9,6 +9,9 @@ import * as lodash from "lodash";
 import * as Nunjucks from "nunjucks";
 import * as Twitter from "twitter";
 
+import ExportFormat from "./exportFormat";
+import User from "./user";
+
 import Stub from "./stub";
 
 Commander
@@ -34,13 +37,6 @@ else {
         consumer_key: process.env.TWITTER_CONSUMER_KEY,
         consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
     });
-}
-
-class User {
-    /* tslint:disable:variable-name */
-    public screen_name: string;
-    public profile_image_url: string;
-    /* tslint:enable:variable-name */
 }
 
 async function getUserList(endpoint: string) {
@@ -113,7 +109,7 @@ function createFilename(extension: string): string {
     const followOnly = lodash.differenceWith(friends, followers, userComparator);
 
     /* tslint:disable:object-literal-sort-keys */
-    const output = {
+    const output: ExportFormat = {
         followers,
         friends,
         followEachOther,
