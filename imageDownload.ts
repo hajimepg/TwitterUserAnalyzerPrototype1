@@ -40,30 +40,31 @@ function createImageDir(imageDir: string) {
     }
 }
 
-try {
-    const input = fs.readFileSync(Commander.input, { encoding: "utf8" });
-    const data: ExportFormat = JSON.parse(input);
-
-    const imageDir = path.join(process.cwd(), "images");
-    createImageDir(imageDir);
-
-    let downloadCount: number = 0;
+function createDownloadQueue(followers: User[], friends: User[]): User[] {
     const userComparator = (a, b) => a.screen_name === b.screen_name;
+
     const downloadQueue = lodash.unionWith(
         lodash.cloneDeep(
-            data.followers.slice(0, 10) // TODO: デバッグが終わったらsliceを外す
+            followers.slice(0, 10) // TODO: デバッグが終わったらsliceを外す
         ),
         lodash.cloneDeep(
-            data.friends.slice(0, 10) // TODO: デバッグが終わったらsliceを外す
+            friends.slice(0, 10) // TODO: デバッグが終わったらsliceを外す
         ),
         userComparator
     );
+
+    return downloadQueue;
+}
+
+function createDownloader(downloadQueue: User[], imageDir: string) {
+    let downloadCount: number = 0;
+
     const download = () => {
-        if (downloadQueue.length === 0) {
+        const target = downloadQueue.shift();
+        if (!target) {
             return;
         }
 
-        const target = downloadQueue.shift();
         const screenName: string = target.screen_name;
         const imageUrl: string = target.profile_image_url;
         console.log(`[${downloadCount}] download ${imageUrl}`);
@@ -96,6 +97,20 @@ try {
             });
         });
     };
+
+    return download;
+}
+
+try {
+    const input = fs.readFileSync(Commander.input, { encoding: "utf8" });
+    const data: ExportFormat = JSON.parse(input);
+
+    const downloadQueue = createDownloadQueue(data.followers, data.friends);
+
+    const imageDir = path.join(process.cwd(), "images");
+    createImageDir(imageDir);
+
+    const download = createDownloader(downloadQueue, imageDir);
     download();
 }
 catch (e) {
