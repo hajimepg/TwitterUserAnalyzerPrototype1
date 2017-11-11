@@ -8,7 +8,7 @@
         "no-console": false,
         "one-line": {
             "options": [
-                "check-catch",
+                // "check-catch",
                 // "check-else",
                 "check-finally",
                 "check-open-brace",
