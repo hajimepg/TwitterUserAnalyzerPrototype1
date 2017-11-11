@@ -14,6 +14,17 @@ Commander
     .option("--input <file>")
     .parse(process.argv);
 
+function getExtension(contentType: string | string[]): string {
+    switch (contentType) {
+        case "image/jpeg":
+            return "jpg";
+        case "image/png":
+            return "png";
+        default:
+            return "";
+    }
+}
+
 try {
     const input = fs.readFileSync(Commander.input, { encoding: "utf8" });
     const data: ExportFormat = JSON.parse(input);
@@ -27,17 +38,10 @@ try {
         }
 
         const contentType = res.headers["content-type"];
-        let extension: string;
-        switch (contentType) {
-            case "image/jpeg":
-                extension = "jpg";
-                break;
-            case "image/png":
-                extension = "png";
-                break;
-            default:
-                console.log(`Unsupported content-type: ${contentType}`);
-                return;
+        const extension: string = getExtension(contentType);
+        if (extension === "") {
+            console.log(`Unsupported content-type: ${contentType}`);
+            return;
         }
 
         const chunks: Buffer[] = [];
