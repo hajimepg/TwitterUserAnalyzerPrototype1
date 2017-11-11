@@ -18,6 +18,7 @@ try {
     const input = fs.readFileSync(Commander.input, { encoding: "utf8" });
     const data: ExportFormat = JSON.parse(input);
 
+    const screenName: string = data.followers[0].screen_name;
     const imageUrl: string = data.followers[0].profile_image_url;
     console.log(imageUrl);
     http.get(imageUrl, (res) => {
@@ -47,7 +48,7 @@ try {
         res.on("end", () => {
             console.log("all data received");
             const imageData = Buffer.concat(chunks);
-            fs.writeFileSync(`image.${extension}`, imageData);
+            fs.writeFileSync(`${screenName}.${extension}`, imageData);
         });
     });
 }
