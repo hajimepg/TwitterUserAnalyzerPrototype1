@@ -29,10 +29,10 @@ export function createDownloadQueue(followers: User[], friends: User[]): User[] 
 
     const downloadQueue = lodash.unionWith(
         lodash.cloneDeep(
-            followers.slice(0, 10) // TODO: デバッグが終わったらsliceを外す
+            followers
         ),
         lodash.cloneDeep(
-            friends.slice(0, 10) // TODO: デバッグが終わったらsliceを外す
+            friends
         ),
         userComparator
     );

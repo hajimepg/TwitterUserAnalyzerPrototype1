@@ -59,11 +59,6 @@ async function getUserList(endpoint: string) {
                     });
                 }
 
-                // TODO: あとで消すこと
-                resolve(users);
-                return;
-                // ここまで消すこと
-
                 console.log(response.next_cursor);
                 if (response.next_cursor === 0) {
                     resolve(users);
