@@ -42,8 +42,6 @@ export function createDownloadQueue(followers: User[], friends: User[]): User[] 
 
 export function downloadProfileImage(downloadQueue: User[], imageDir: string): Promise<object> {
     return new Promise<object>((resolve, reject) => {
-        let downloadCount: number = 0;
-
         const download = () => {
             const target = downloadQueue.shift();
             if (!target) {
@@ -53,9 +51,8 @@ export function downloadProfileImage(downloadQueue: User[], imageDir: string): P
 
             const screenName: string = target.screen_name;
             const imageUrl: string = target.profile_image_url;
-            console.log(`[${downloadCount}] download ${imageUrl}`);
+            console.log(`download ${imageUrl}`);
             http.get(imageUrl, (res) => {
-                downloadCount++;
                 if (res.statusCode !== 200) {
                     console.log(`download ${imageUrl} failed. statusCode=${res.statusCode}`);
                     setImmediate(download);
