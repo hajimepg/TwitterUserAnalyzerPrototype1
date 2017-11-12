@@ -161,7 +161,20 @@ function createDirName(): string {
         const profileImage = await ImageDownloader.downloadProfileImage(downloadQueue, imageDirName);
 
         const filename: string = path.join(dirName, "index.html");
-        fs.writeFileSync(filename, Nunjucks.render("output.njk", output));
+        const userProfileFinder = (user) => {
+            return {
+                profile_image: profileImage[user.screen_name],
+                screen_name: user.screen_name
+            };
+        };
+        /* tslint:disable:object-literal-sort-keys */
+        const data = {
+            followEachOther: output.followEachOther.map(userProfileFinder),
+            followedOnly: output.followedOnly.map(userProfileFinder),
+            followOnly: output.followOnly.map(userProfileFinder),
+        };
+        /* tslint:enable:object-literal-sort-keys */
+        fs.writeFileSync(filename, Nunjucks.render("output.njk", data));
     }
     else {
         assert.fail(`Unsupported output format: "${format}"`);
