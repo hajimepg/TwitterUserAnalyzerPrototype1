@@ -2,6 +2,7 @@
 
 import * as assert from "assert";
 import * as fs from "fs";
+import * as path from "path";
 
 import * as Commander from "commander";
 import * as DateFns from "date-fns";
@@ -80,7 +81,7 @@ async function getFriends() {
     return getUserList("friends/list");
 }
 
-function createFilename(extension: string): string {
+function createFileName(extension: string): string {
     const currentDate: string = DateFns.format(new Date(), "YYYY-MM-DD");
     let filename: string;
 
@@ -90,6 +91,26 @@ function createFilename(extension: string): string {
         }
         else {
             filename = `./output-${currentDate}_${i}.${extension}`;
+        }
+
+        if (fs.existsSync(filename) === false) {
+            break;
+        }
+    }
+
+    return filename;
+}
+
+function createDirName(): string {
+    const currentDate: string = DateFns.format(new Date(), "YYYY-MM-DD");
+    let filename: string;
+
+    for (let i: number = 0; ; i++) {
+        if (i === 0) {
+            filename = `./output-${currentDate}`;
+        }
+        else {
+            filename = `./output-${currentDate}_${i}`;
         }
 
         if (fs.existsSync(filename) === false) {
@@ -120,11 +141,14 @@ function createFilename(extension: string): string {
     /* tslint:enable:object-literal-sort-keys */
 
     if (format === "json") {
-        const filename: string = createFilename(format);
+        const filename: string = createFileName(format);
         fs.writeFileSync(filename, JSON.stringify(output, null, 4));
     }
     else if (format === "html") {
-        const filename: string = createFilename(format);
+        const dirName = createDirName();
+        fs.mkdirSync(dirName);
+
+        const filename: string = path.join(dirName, "index.html");
         fs.writeFileSync(filename, Nunjucks.render("output.njk", output));
     }
     else {
