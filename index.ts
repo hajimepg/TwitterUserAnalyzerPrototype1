@@ -148,6 +148,14 @@ function createDirName(): string {
         const dirName = createDirName();
         fs.mkdirSync(dirName);
 
+        const downloadQueue = ImageDownloader.createDownloadQueue(output.followers, output.friends);
+
+        const imageDirName = path.join(dirName, "images");
+        fs.mkdirSync(imageDirName);
+
+        const download = ImageDownloader.createDownloader(downloadQueue, imageDirName);
+        download();
+
         const filename: string = path.join(dirName, "index.html");
         fs.writeFileSync(filename, Nunjucks.render("output.njk", output));
     }

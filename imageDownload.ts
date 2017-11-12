@@ -24,7 +24,7 @@ function getExtension(contentType: string | string[]): string {
     }
 }
 
-function createDownloadQueue(followers: User[], friends: User[]): User[] {
+export function createDownloadQueue(followers: User[], friends: User[]): User[] {
     const userComparator = (a, b) => a.screen_name === b.screen_name;
 
     const downloadQueue = lodash.unionWith(
@@ -40,7 +40,7 @@ function createDownloadQueue(followers: User[], friends: User[]): User[] {
     return downloadQueue;
 }
 
-function createDownloader(downloadQueue: User[], imageDir: string) {
+export function createDownloader(downloadQueue: User[], imageDir: string) {
     let downloadCount: number = 0;
 
     const download = () => {
