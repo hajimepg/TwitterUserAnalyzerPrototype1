@@ -40,49 +40,52 @@ export function createDownloadQueue(followers: User[], friends: User[]): User[] 
     return downloadQueue;
 }
 
-export function createDownloader(downloadQueue: User[], imageDir: string) {
-    let downloadCount: number = 0;
+export function downloadProfileImage(downloadQueue: User[], imageDir: string): Promise<object> {
+    return new Promise<object>((resolve, reject) => {
+        let downloadCount: number = 0;
 
-    const download = () => {
-        const target = downloadQueue.shift();
-        if (!target) {
-            return;
-        }
-
-        const screenName: string = target.screen_name;
-        const imageUrl: string = target.profile_image_url;
-        console.log(`[${downloadCount}] download ${imageUrl}`);
-        http.get(imageUrl, (res) => {
-            downloadCount++;
-            if (res.statusCode !== 200) {
-                console.log(`download ${imageUrl} failed. statusCode=${res.statusCode}`);
-                setImmediate(download);
+        const download = () => {
+            const target = downloadQueue.shift();
+            if (!target) {
+                resolve({});
                 return;
             }
 
-            const contentType = res.headers["content-type"];
-            const extension: string = getExtension(contentType);
-            if (extension === "") {
-                console.log(`Unsupported content-type: ${contentType}`);
-                setImmediate(download);
-                return;
-            }
+            const screenName: string = target.screen_name;
+            const imageUrl: string = target.profile_image_url;
+            console.log(`[${downloadCount}] download ${imageUrl}`);
+            http.get(imageUrl, (res) => {
+                downloadCount++;
+                if (res.statusCode !== 200) {
+                    console.log(`download ${imageUrl} failed. statusCode=${res.statusCode}`);
+                    setImmediate(download);
+                    return;
+                }
 
-            const chunks: Buffer[] = [];
-            res.on("data", (chunk: Buffer) => {
-                chunks.push(chunk);
-            });
-            res.on("end", () => {
-                const filename = `${screenName}.${extension}`;
-                const imageData = Buffer.concat(chunks);
-                fs.writeFileSync(path.join(imageDir, filename), imageData);
-                console.log(`${filename} saved.`);
-                setImmediate(download);
-            });
-        });
-    };
+                const contentType = res.headers["content-type"];
+                const extension: string = getExtension(contentType);
+                if (extension === "") {
+                    console.log(`Unsupported content-type: ${contentType}`);
+                    setImmediate(download);
+                    return;
+                }
 
-    return download;
+                const chunks: Buffer[] = [];
+                res.on("data", (chunk: Buffer) => {
+                    chunks.push(chunk);
+                });
+                res.on("end", () => {
+                    const filename = `${screenName}.${extension}`;
+                    const imageData = Buffer.concat(chunks);
+                    fs.writeFileSync(path.join(imageDir, filename), imageData);
+                    console.log(`${filename} saved.`);
+                    setImmediate(download);
+                });
+            });
+        };
+
+        download();
+    });
 }
 
 if (require.main === module) {
@@ -111,8 +114,7 @@ if (require.main === module) {
         const imageDir = path.join(process.cwd(), "images");
         createImageDir(imageDir);
 
-        const download = createDownloader(downloadQueue, imageDir);
-        download();
+        const download = downloadProfileImage(downloadQueue, imageDir);
     }
     catch (e) {
         console.error(e);
