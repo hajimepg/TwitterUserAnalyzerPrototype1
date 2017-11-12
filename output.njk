@@ -7,21 +7,21 @@
         <h3>followEachOther</h3>
         <ul>
             {% for user in followEachOther %}
-                <li><img src="images/{{ user.profile_image }}"/> {{ user.screen_name }}</li>
+                <li><a href="https://www.twitter.com/{{ user.screen_name }}"><img src="images/{{ user.profile_image }}"/> {{ user.screen_name }}</a></li>
             {% endfor %}
         </ul>
 
         <h3>followedOnly</h3>
         <ul>
             {% for user in followedOnly %}
-                <li><img src="images/{{ user.profile_image }}"/> {{ user.screen_name }}</li>
+                <li><a href="https://www.twitter.com/{{ user.screen_name }}"><img src="images/{{ user.profile_image }}"/> {{ user.screen_name }}</a></li>
             {% endfor %}
         </ul>
 
         <h3>followOnly</h3>
         <ul>
             {% for user in followOnly %}
-                <li><img src="images/{{ user.profile_image }}"/> {{ user.screen_name }}</li>
+                <li><a href="https://www.twitter.com/{{ user.screen_name }}"><img src="images/{{ user.profile_image }}"/> {{ user.screen_name }}</a></li>
             {% endfor %}
         </ul>
     </body>
