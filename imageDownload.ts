@@ -42,10 +42,12 @@ export function createDownloadQueue(followers: User[], friends: User[]): User[] 
 
 export function downloadProfileImage(downloadQueue: User[], imageDir: string): Promise<object> {
     return new Promise<object>((resolve, reject) => {
+        const result = {};
+
         const download = () => {
             const target = downloadQueue.shift();
             if (!target) {
-                resolve({});
+                resolve(result);
                 return;
             }
 
@@ -76,6 +78,7 @@ export function downloadProfileImage(downloadQueue: User[], imageDir: string): P
                     const imageData = Buffer.concat(chunks);
                     fs.writeFileSync(path.join(imageDir, filename), imageData);
                     console.log(`${filename} saved.`);
+                    result[screenName] = filename;
                     setImmediate(download);
                 });
             });
