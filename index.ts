@@ -12,6 +12,7 @@ import * as Twitter from "twitter";
 import ExportFormat from "./exportFormat";
 import User from "./user";
 
+import * as ImageDownloader from "./imageDownload";
 import Stub from "./stub";
 
 Commander

@@ -13,10 +13,6 @@ import * as lodash from "lodash";
 import ExportFormat from "./exportFormat";
 import User from "./user";
 
-Commander
-    .option("--input <file>")
-    .parse(process.argv);
-
 function getExtension(contentType: string | string[]): string {
     switch (contentType) {
         case "image/jpeg":
@@ -25,18 +21,6 @@ function getExtension(contentType: string | string[]): string {
             return "png";
         default:
             return "";
-    }
-}
-
-function createImageDir(imageDir: string) {
-    if (fs.existsSync(imageDir)) {
-        if (fs.statSync(imageDir).isDirectory() === false) {
-            throw new Error("directory name already used");
-        }
-        fs.accessSync(imageDir, fs.constants.W_OK);
-    }
-    else {
-        fs.mkdirSync(imageDir);
     }
 }
 
@@ -101,19 +85,37 @@ function createDownloader(downloadQueue: User[], imageDir: string) {
     return download;
 }
 
-try {
-    const input = fs.readFileSync(Commander.input, { encoding: "utf8" });
-    const data: ExportFormat = JSON.parse(input);
+if (require.main === module) {
+    Commander
+        .option("--input <file>")
+        .parse(process.argv);
 
-    const downloadQueue = createDownloadQueue(data.followers, data.friends);
+    function createImageDir(imageDir: string) {
+        if (fs.existsSync(imageDir)) {
+            if (fs.statSync(imageDir).isDirectory() === false) {
+                throw new Error("directory name already used");
+            }
+            fs.accessSync(imageDir, fs.constants.W_OK);
+        }
+        else {
+            fs.mkdirSync(imageDir);
+        }
+    }
 
-    const imageDir = path.join(process.cwd(), "images");
-    createImageDir(imageDir);
+    try {
+        const input = fs.readFileSync(Commander.input, { encoding: "utf8" });
+        const data: ExportFormat = JSON.parse(input);
 
-    const download = createDownloader(downloadQueue, imageDir);
-    download();
-}
-catch (e) {
-    console.error(e);
-    process.exit(1);
+        const downloadQueue = createDownloadQueue(data.followers, data.friends);
+
+        const imageDir = path.join(process.cwd(), "images");
+        createImageDir(imageDir);
+
+        const download = createDownloader(downloadQueue, imageDir);
+        download();
+    }
+    catch (e) {
+        console.error(e);
+        process.exit(1);
+    }
 }
